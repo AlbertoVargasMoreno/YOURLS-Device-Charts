@@ -9,6 +9,7 @@ Author URI: https://sachinagrawal.me
 */
 
 // Load the user-agent parsing library WhichBrowser
+// require 'vendor/autoload.php';
 require __DIR__ . '/../../../includes/vendor/autoload.php';
 use WhichBrowser\Parser;
 
@@ -37,6 +38,15 @@ function timezone_offset_to_gmt_offset($timezone_offset) {
     return 'GMT' . $offset;
 }
 
+function count_distinct_categories(string $device_type, &$counter) {
+    if (!key_exists($device_type, $counter)) {
+        // add index 0 to meet google chart data style
+        $counter[$device_type][0] = $device_type;
+        $counter[$device_type][1] = 0;
+    }
+    $counter[$device_type][1]++;
+}
+
 function ip_detail_page($shorturl) {
     $nonce = yourls_create_nonce('ip');
     global $ydb;
@@ -46,6 +56,10 @@ function ip_detail_page($shorturl) {
     $outdata   = '';
 
     $query = $ydb->fetchObjects("SELECT * FROM `$table_log` WHERE shorturl='$shorturl[0]' ORDER BY click_id DESC LIMIT 1000");
+
+    $DEVICE_DATASERIES = [];
+    $BROWSER_DATASERIES = [];
+    $PLATFORMS_DATASERIES = [];
 
     if ($query) {
         foreach ($query as $query_result) {
@@ -76,6 +90,12 @@ function ip_detail_page($shorturl) {
             // echo '<script>';
             // echo 'console.log(' . json_encode($wbresult) . ');';
             // echo '</script>';
+
+            count_distinct_categories($wbresult->device->type, $DEVICE_DATASERIES);
+            count_distinct_categories($wbresult->browser->name, $BROWSER_DATASERIES);
+            count_distinct_categories($wbresult->os->name, $PLATFORMS_DATASERIES);
+
+            var_dump($DEVICE_DATASERIES, $BROWSER_DATASERIES, $PLATFORMS_DATASERIES);
 
             $outdata .= '<tr'.$me.'><td>'.$query_result->click_time.'</td>
                         <td>'.$local_time.'</td>
