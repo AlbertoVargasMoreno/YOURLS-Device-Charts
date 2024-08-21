@@ -2,16 +2,17 @@
 /*
 Plugin Name: Device Details
 Plugin URI: https://github.com/SachinSAgrawal/YOURLS-Device-Details
-Description: Parses user-agent using a custom library to display information about IP and device
-Version: 1.2
-Author: Sachin Agrawal
-Author URI: https://sachinagrawal.me
+Description: Parses user-agent using a custom library to display charts about devices
+Version: 1.0
+Author: Alberto Vargas
+Author URI: https://github.com/AlbertoVargasMoreno
 */
 
 // Load the user-agent parsing library WhichBrowser
 // require 'vendor/autoload.php';
 require __DIR__ . '/../../../includes/vendor/autoload.php';
 use WhichBrowser\Parser;
+require_once(dirname(__FILE__) . '/../../../includes/load-yourls.php');
 
 yourls_add_action('post_yourls_info_stats', 'ip_detail_page');
 
@@ -38,13 +39,14 @@ function timezone_offset_to_gmt_offset($timezone_offset) {
     return 'GMT' . $offset;
 }
 
-function count_distinct_categories(string $device_type, &$counter) {
-    if (!key_exists($device_type, $counter)) {
-        // add index 0 to meet google chart data style
-        $counter[$device_type][0] = $device_type;
-        $counter[$device_type][1] = 0;
+function count_distinct_categories(?string $category_name, array $counter) {
+    $category_name ??= '';
+    $category_name = $category_name === '' ? 'unknown' : $category_name;    
+    if (!key_exists($category_name, $counter)) {
+        $counter[$category_name] = 0;
     }
-    $counter[$device_type][1]++;
+    $counter[$category_name]++;
+    return $counter;
 }
 
 function ip_detail_page($shorturl) {
@@ -91,11 +93,9 @@ function ip_detail_page($shorturl) {
             // echo 'console.log(' . json_encode($wbresult) . ');';
             // echo '</script>';
 
-            count_distinct_categories($wbresult->device->type, $DEVICE_DATASERIES);
-            count_distinct_categories($wbresult->browser->name, $BROWSER_DATASERIES);
-            count_distinct_categories($wbresult->os->name, $PLATFORMS_DATASERIES);
-
-            var_dump($DEVICE_DATASERIES, $BROWSER_DATASERIES, $PLATFORMS_DATASERIES);
+            $DEVICE_DATASERIES = count_distinct_categories($wbresult->device->type, $DEVICE_DATASERIES);
+            $BROWSER_DATASERIES = count_distinct_categories($wbresult->browser->name, $BROWSER_DATASERIES);
+            $PLATFORMS_DATASERIES = count_distinct_categories($wbresult->os->name, $PLATFORMS_DATASERIES);
 
             $outdata .= '<tr'.$me.'><td>'.$query_result->click_time.'</td>
                         <td>'.$local_time.'</td>
@@ -114,8 +114,12 @@ function ip_detail_page($shorturl) {
 						</tr>';
         }
 
-        echo '<table  border="1" cellpadding="5" style="margin-top:25px;"><tr><td width="80">Timestamp</td><td>Local Time</td><td>Timezone</td><td>Country</td><td>City</td>
+        $appendedHtml = '<table  border="1" cellpadding="5" style="margin-top:25px;"><tr><td width="80">Timestamp</td><td>Local Time</td><td>Timezone</td><td>Country</td><td>City</td>
 				<td>IP Address</td><td>User Agent</td><td>Browser Version</td><td>OS Version</td><td>Device Model</td>
 				<td>Device Vendor</td><td>Device Type</td><td>Engine</td><td>Referrer</td></tr>' . $outdata . "</table><br>\n\r";
+        yourls_stats_pie( $DEVICE_DATASERIES, 10, '340x220', 'devices_pie' );
+        yourls_stats_pie( $BROWSER_DATASERIES, 10, '340x220', 'browsers_pie' );
+        yourls_stats_pie( $PLATFORMS_DATASERIES, 10, '340x220', 'platforms_pie' );
+        // echo $appendedHtml;
     }
 }
