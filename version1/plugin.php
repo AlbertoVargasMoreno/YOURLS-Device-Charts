@@ -9,7 +9,8 @@ Author URI: https://sachinagrawal.me
 */
 
 // Load the user-agent parsing library WhichBrowser
-require 'vendor/autoload.php';
+require __DIR__ . '/../../../includes/vendor/autoload.php';
+use WhichBrowser\Parser;
 
 yourls_add_action('post_yourls_info_stats', 'ip_detail_page');
 
@@ -57,7 +58,7 @@ function ip_detail_page($shorturl) {
 
             // Parse user agent
             $ua = $query_result->user_agent;
-            $wbresult = new WhichBrowser\Parser($ua);
+            $wbresult = new Parser($ua);
 
             // Get additional IP information from ipinfo.io
             $ip_info = get_ip_info($query_result->ip_address);
