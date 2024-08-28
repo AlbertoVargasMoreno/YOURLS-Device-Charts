@@ -25,6 +25,22 @@ function count_distinct_categories(?string $category_name, array $counter) {
     return $counter;
 }
 
+function generate_pre_html(string $chart_name) : string {
+    $cardHtml = <<<HTML
+        <dashboard-pie caption="$chart_name">
+            <div class="metrics-headline">
+                <h3 class="ml16">$chart_name</h3>
+            </div>
+    HTML;
+    return $cardHtml;
+}
+function generate_post_html() : string {
+    $cardHtml = <<<HTML
+        </dashboard-pie>
+    HTML;
+    return $cardHtml;
+}
+
 function ip_detail_page($shorturl) {
     $nonce = yourls_create_nonce('ip');
     global $ydb;
@@ -33,25 +49,32 @@ function ip_detail_page($shorturl) {
     $table_log = YOURLS_DB_TABLE_LOG;
     $outdata   = '';
 
-    $query = $ydb->fetchObjects("SELECT * FROM `$table_log` WHERE shorturl='$shorturl[0]' ORDER BY click_id DESC LIMIT 1000");
+    $clicks_logs = $ydb->fetchObjects("SELECT * FROM `$table_log` WHERE shorturl='$shorturl[0]' ORDER BY click_id DESC LIMIT 1000");
 
     $DEVICE_DATASERIES = [];
     $BROWSER_DATASERIES = [];
     $PLATFORMS_DATASERIES = [];
 
-    if ($query) {
-        foreach ($query as $query_result) {
+    if ($clicks_logs) {
+        foreach ($clicks_logs as $click_log) {
             // Parse user agent
-            $ua = $query_result->user_agent;
+            $ua = $click_log->user_agent;
             $wbresult = new Parser($ua);
 
             $DEVICE_DATASERIES = count_distinct_categories($wbresult->device->type, $DEVICE_DATASERIES);
             $BROWSER_DATASERIES = count_distinct_categories($wbresult->browser->name, $BROWSER_DATASERIES);
             $PLATFORMS_DATASERIES = count_distinct_categories($wbresult->os->name, $PLATFORMS_DATASERIES);
         }
+        echo generate_pre_html("Devices");
+        yourls_stats_pie( $DEVICE_DATASERIES, 4, '340x220', 'devices_pie' );
+        echo generate_post_html();
 
-        yourls_stats_pie( $DEVICE_DATASERIES, 10, '340x220', 'devices_pie' );
-        yourls_stats_pie( $BROWSER_DATASERIES, 10, '340x220', 'browsers_pie' );
-        yourls_stats_pie( $PLATFORMS_DATASERIES, 10, '340x220', 'platforms_pie' );
+        echo generate_pre_html("Browsers");
+        yourls_stats_pie( $BROWSER_DATASERIES, 4, '340x220', 'browsers_pie' );
+        echo generate_post_html();
+
+        echo generate_pre_html("Platforms");
+        yourls_stats_pie( $PLATFORMS_DATASERIES, 4, '340x220', 'platforms_pie' );
+        echo generate_post_html();
     }
 }
