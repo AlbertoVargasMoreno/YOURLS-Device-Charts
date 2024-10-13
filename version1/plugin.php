@@ -34,11 +34,21 @@ function generate_pre_html(string $chart_name) : string {
     HTML;
     return $cardHtml;
 }
-function generate_post_html() : string {
-    $cardHtml = <<<HTML
+function generate_post_html(array $dataseries): string {
+    $cardFooterHtml = <<<HTML
+            <ul class="no_bullet">
+    HTML;
+    foreach ($dataseries as $group_name => $count) {
+        $cardFooterHtml .= <<<HTML
+                <li class='sites_list'>$group_name: <strong>$count</strong></li>
+        HTML;
+        unset($dataseries[$group_name]);
+    }
+    $cardFooterHtml .= <<<HTML
+            </ul>
         </dashboard-pie>
     HTML;
-    return $cardHtml;
+    return $cardFooterHtml;
 }
 
 function ip_detail_page($shorturl) {
@@ -65,16 +75,20 @@ function ip_detail_page($shorturl) {
             $BROWSER_DATASERIES = count_distinct_categories($wbresult->browser->name, $BROWSER_DATASERIES);
             $PLATFORMS_DATASERIES = count_distinct_categories($wbresult->os->name, $PLATFORMS_DATASERIES);
         }
+        arsort($DEVICE_DATASERIES);
+        arsort($BROWSER_DATASERIES);
+        arsort($PLATFORMS_DATASERIES);
+
         echo generate_pre_html("Devices");
         yourls_stats_pie( $DEVICE_DATASERIES, 4, '340x220', 'devices_pie' );
-        echo generate_post_html();
+        echo generate_post_html($DEVICE_DATASERIES);
 
         echo generate_pre_html("Browsers");
         yourls_stats_pie( $BROWSER_DATASERIES, 4, '340x220', 'browsers_pie' );
-        echo generate_post_html();
+        echo generate_post_html($BROWSER_DATASERIES);
 
         echo generate_pre_html("Platforms");
         yourls_stats_pie( $PLATFORMS_DATASERIES, 4, '340x220', 'platforms_pie' );
-        echo generate_post_html();
+        echo generate_post_html($PLATFORMS_DATASERIES);
     }
 }
