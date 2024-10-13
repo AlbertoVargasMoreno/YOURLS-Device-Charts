@@ -17,7 +17,7 @@ yourls_add_action('post_yourls_info_stats', 'ip_detail_page');
 
 function count_distinct_categories(?string $category_name, array $counter) {
     $category_name ??= '';
-    $category_name = $category_name === '' ? 'unknown' : $category_name;    
+    $category_name = $category_name === '' ? 'Unknown' : ucfirst($category_name);
     if (!key_exists($category_name, $counter)) {
         $counter[$category_name] = 0;
     }
@@ -25,8 +25,26 @@ function count_distinct_categories(?string $category_name, array $counter) {
     return $counter;
 }
 
-function generate_pre_html(string $chart_name) : string {
+function generate_open_table_html() : string {
+    $tableHtml = <<<HTML
+    <table border="0" cellspacing="2">
+        <tbody>
+            <tr>
+    HTML;
+    return $tableHtml;
+}
+function generate_close_table_html() : string {
+    $tableHtml = <<<HTML
+                </tr>
+        </tbody>
+    </table> 
+    HTML;
+    return $tableHtml;
+}
+
+function generate_open_chartContainer_html(string $chart_name) : string {
     $cardHtml = <<<HTML
+    <td valign="top">
         <dashboard-pie caption="$chart_name">
             <div class="metrics-headline">
                 <h3 class="ml16">$chart_name</h3>
@@ -34,7 +52,7 @@ function generate_pre_html(string $chart_name) : string {
     HTML;
     return $cardHtml;
 }
-function generate_post_html(array $dataseries): string {
+function generate_close_chartContainer_html(array $dataseries): string {
     $cardFooterHtml = <<<HTML
             <ul class="no_bullet">
     HTML;
@@ -47,6 +65,7 @@ function generate_post_html(array $dataseries): string {
     $cardFooterHtml .= <<<HTML
             </ul>
         </dashboard-pie>
+    </td>
     HTML;
     return $cardFooterHtml;
 }
@@ -79,16 +98,22 @@ function ip_detail_page($shorturl) {
         arsort($BROWSER_DATASERIES);
         arsort($PLATFORMS_DATASERIES);
 
-        echo generate_pre_html("Devices");
-        yourls_stats_pie( $DEVICE_DATASERIES, 4, '340x220', 'devices_pie' );
-        echo generate_post_html($DEVICE_DATASERIES);
+        echo "
+        <br>
+        <br>
+        ";
+        echo generate_open_table_html();
+            echo generate_open_chartContainer_html("Devices");
+            yourls_stats_pie( $DEVICE_DATASERIES, 4, '340x220', 'devices_pie' );
+            echo generate_close_chartContainer_html($DEVICE_DATASERIES);            
 
-        echo generate_pre_html("Browsers");
-        yourls_stats_pie( $BROWSER_DATASERIES, 4, '340x220', 'browsers_pie' );
-        echo generate_post_html($BROWSER_DATASERIES);
+            echo generate_open_chartContainer_html("Browsers");
+            yourls_stats_pie( $BROWSER_DATASERIES, 4, '340x220', 'browsers_pie' );
+            echo generate_close_chartContainer_html($BROWSER_DATASERIES);            
 
-        echo generate_pre_html("Platforms");
-        yourls_stats_pie( $PLATFORMS_DATASERIES, 4, '340x220', 'platforms_pie' );
-        echo generate_post_html($PLATFORMS_DATASERIES);
+            echo generate_open_chartContainer_html("Platforms");
+            yourls_stats_pie( $PLATFORMS_DATASERIES, 4, '340x220', 'platforms_pie' );
+            echo generate_close_chartContainer_html($PLATFORMS_DATASERIES);
+        echo generate_close_table_html();
     }
 }
