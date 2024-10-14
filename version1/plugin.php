@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Device Details
-Plugin URI: https://github.com/SachinSAgrawal/YOURLS-Device-Details
+Plugin Name: Device Details Charts
+Plugin URI: https://github.com/AlbertoVargasMoreno/YOURLS-Device-Details
 Description: Parses user-agent using a custom library to display charts about devices
 Version: 1.0
 Author: Alberto Vargas
@@ -13,7 +13,7 @@ Author URI: https://github.com/AlbertoVargasMoreno
 require __DIR__ . '/../../../includes/vendor/autoload.php';
 use WhichBrowser\Parser;
 
-yourls_add_action('post_yourls_info_stats', 'ip_detail_page');
+yourls_add_action('post_yourls_info_stats', 'device_charts_page');
 
 function count_distinct_categories(?string $category_name, array $counter) {
     $category_name ??= '';
@@ -70,13 +70,9 @@ function generate_close_chartContainer_html(array $dataseries): string {
     return $cardFooterHtml;
 }
 
-function ip_detail_page($shorturl) {
-    $nonce = yourls_create_nonce('ip');
+function device_charts_page($shorturl) {
     global $ydb;
-    $base  = YOURLS_SITE;
-    $table_url = YOURLS_DB_TABLE_URL;
     $table_log = YOURLS_DB_TABLE_LOG;
-    $outdata   = '';
 
     $clicks_logs = $ydb->fetchObjects("SELECT * FROM `$table_log` WHERE shorturl='$shorturl[0]' ORDER BY click_id DESC LIMIT 1000");
 
