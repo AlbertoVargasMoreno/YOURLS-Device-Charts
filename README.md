@@ -1,7 +1,8 @@
-# Device Details
+# Device Charts
 
 A plugin to display charts about devices, platforms and browsers. <br>
-Requires Your Own URL Shortener ([YOURLS](https://yourls.org)) `v1.9.2` and above.
+- Requires Your Own URL Shortener ([YOURLS](https://yourls.org)) `v1.9.2` and above.
+- Requires `composer` dependency manager installed
 
 ## Usage
 
