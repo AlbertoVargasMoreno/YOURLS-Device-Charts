@@ -2,16 +2,21 @@
 /*
 Plugin Name: Device Details Charts
 Plugin URI: https://github.com/AlbertoVargasMoreno/YOURLS-Device-Details
-Description: Parses user-agent using a custom library to display charts about devices
+Description: Parses user-agent using a custom library to display charts about devices, browsers and platforms
 Version: 1.0
 Author: Alberto Vargas
 Author URI: https://github.com/AlbertoVargasMoreno
 */
 
+/*
+This script requires the function `yourls_stats_pie()`
+This function is declared in `includes\functions-infos.php`
+Which is already included by `yourls-infos.php` in `require_once( dirname( __FILE__ ).'/includes/load-yourls.php' )`
+*/
+
 // Load the user-agent parsing library WhichBrowser
-// require 'vendor/autoload.php';
-require __DIR__ . '/../../../includes/vendor/autoload.php';
 use WhichBrowser\Parser;
+require __DIR__ . '/../../../includes/vendor/autoload.php';
 
 yourls_add_action('post_yourls_info_stats', 'device_charts_page');
 
